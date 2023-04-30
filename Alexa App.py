@@ -136,8 +136,7 @@ def run_alexa():
         sys.exit()
     else:
         engine_talk('I could not hear you properly')
-        
-        
+          
 while True:
     run_alexa()
     
