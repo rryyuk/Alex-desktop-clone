@@ -13,6 +13,7 @@ import requests, json , sys
 #Wikipedia
 #OpenweatherApi
 #APIs used for this project
+
 listener = sr.Recognizer()
 
 engine = pyttsx3.init()
