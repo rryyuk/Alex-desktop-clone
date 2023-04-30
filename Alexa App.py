@@ -12,7 +12,7 @@ import requests, json , sys
 #PyJokes
 #Wikipedia
 #OpenweatherApi
-
+#APIs used for this project
 listener = sr.Recognizer()
 
 engine = pyttsx3.init()
