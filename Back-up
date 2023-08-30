@@ -1,0 +1,138 @@
+import pyjokes
+import speech_recognition as sr
+import pyttsx3
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from email.message import EmailMessage
+import pywhatkit
+import datetime
+import wikipedia 
+import PyPDF2
+import smtplib
+
+//how voice is working
+listener = sr.Recognizer()
+engine = pyttsx3.init()
+voices = engine.getProperty("voices")
+engine.setProperty('voice', voices[1].id)
+engine.setProperty('rate', 200)
+
+def engine_talk(text):
+    engine.say(text)
+    engine.runAndWait()
+def wishMe():
+    hour = int(datetime.datetime.now().hour)
+    if hour>=0 and hour<12:
+        engine_talk("Good Morning!")
+
+    elif hour>=12 and hour<18:
+        engine_talk("Good Afternoon!")   
+
+    else:
+        engine_talk("Good Evening!")  
+
+    engine_talk("I am Your project for this semester.") 
+def user_command():
+    try: 
+        with sr.Microphone() as source:
+            print("clearing background noise")
+            engine_talk("How can i help you")
+            voice = listener.listen(source)
+            command = listener.recognize_google(voice)
+            command = command.lower()
+            print(command)
+
+    except:
+        pass
+    return command
+   
+
+def user_command_for_email():
+    try: 
+        with sr.Microphone() as source:   
+            voice = listener.listen(source)
+            command = listener.recognize_google(voice)
+            command = command.lower()
+            print(command)
+    except:
+        pass
+    return command
+def send_email(receiver, subject, message):
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.ehlo()
+    server.starttls()
+    server.login('your email', 'your email pass')
+    email = EmailMessage()
+    email['From'] = 'your email.com'
+    email['To'] = receiver
+    email['Subject'] = subject
+    email.set_content(message)
+    server.send_message(email)
+def run_alexa():
+    wishMe()
+    command = user_command()
+    
+    if 'email' in command:
+        try:  
+            to = "recciver-email"
+            engine_talk('What is the subject of your email?')
+            subject = user_command_for_email()
+            print("the subject of the email id is", subject)
+            engine_talk('Tell me the text in your email')
+            message = user_command_for_email()
+            print("the body of the email id is", message)
+            send_email(to,subject,message)
+            engine_talk("Email has been sent!")
+        except Exception as e:
+            print(e)
+            engine_talk("Sorry my friend. I am not able to send this email")
+    elif "pdf" in command:
+        with sr.Microphone() as source:
+            print("clearing backgrounnd noise")
+            engine_talk( "which pdf you want to open")
+            voice = listener.listen(source)
+            comm = listener.recognize_google(voice)
+            comm= comm.lower()
+            print(comm)
+        book = open(str(comm)+'.pdf', 'rb')
+        pdfReader = PyPDF2.PdfFileReader(book)
+        pages = pdfReader.numPages
+        for num in range(1, pages):
+            page = pdfReader.getPage(num)
+            text = page.extractText()
+            engine_talk(text)
+                    
+    elif 'feelings' in command:
+        with sr.Microphone() as source:
+            engine_talk('share your feelings')
+            voice = listener.listen(source)
+            text = listener.recognize_google(voice)
+            text = command.lower()
+        sen = [str(text)]
+        ana = SentimentIntensityAnalyzer()
+        for i in sen:
+            v = ana.polarity_scores(i)
+            print(v)
+            engine_talk(v)
+    elif 'hello' in command:
+        engine_talk("Hi I am your virtual assistant")
+    elif 'time' in command:
+        time = datetime.datetime.now().strftime('%I:%M %p')
+        engine_talk('The current time is' + time) 
+    elif 'who is' in command:
+        name = command.replace('who is', '')
+        info = wikipedia.summary(name, 1)
+        print(info)
+        engine_talk(info)
+    elif 'joke' in command:
+        print(engine_talk(pyjokes.get_joke()))
+    elif 'play' in command:
+        song = command.replace('play', ' ')
+        engine_talk("playing"+song)
+        pywhatkit.playonyt(song)
+    elif 'search for ' in command:
+        lo = command.replace('search for', ' ')
+        engine_talk('searching'+lo)
+        pywhatkit.search(lo)
+    else:
+        engine_talk("i didnt get you")
+run_alexa()
